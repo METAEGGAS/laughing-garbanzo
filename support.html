@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>خدمة الزبائن</title>
+<style>
+:root{--r:#d83b3b;--b:#1888ff;--l:#d6e3ef}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#fff;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+.app{max-width:430px;height:100dvh;margin:auto;background:#fff;position:relative;overflow:hidden}
+.top{height:84px;position:relative;display:flex;justify-content:center;align-items:flex-start;padding-top:16px}
+.back{position:absolute;left:14px;top:20px;border:0;background:none;color:#111;font-size:34px;line-height:1;cursor:pointer}
+.tt{margin-top:6px;font-size:21px;font-weight:700;color:#111}
+.ok{position:absolute;right:18px;top:28px;width:10px;height:10px;border-radius:50%;background:#21c55d;opacity:0;transform:scale(.5);transition:.35s}
+.ok.show{opacity:1;transform:scale(1)}
+.chat{position:absolute;inset:84px 0 74px;overflow:auto;padding:8px 8px 14px}
+.row{display:flex;direction:ltr;gap:8px;align-items:flex-start;margin:10px 0}
+.row.me{justify-content:flex-end}
+.av{width:38px;height:38px;min-width:38px;border-radius:50%;background:var(--b);display:grid;place-items:center}
+.av svg{width:23px;height:23px;fill:#fff}
+.b{max-width:290px;padding:11px 12px;border-radius:12px;font-size:14px;line-height:1.65;white-space:pre-wrap;word-break:break-word;direction:rtl;text-align:right}
+.sup{background:var(--r);color:#fff}
+.meb{background:#fff;color:#111;border:1px solid #ececec;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.bar{position:absolute;left:0;right:0;bottom:0;height:74px;border-top:1px solid var(--l);background:#fff;display:flex;flex-direction:row-reverse;align-items:center;gap:10px;padding:10px 12px}
+.send{border:1px solid #ddd;background:#fff;border-radius:999px;padding:10px 16px;font-size:16px;cursor:pointer}
+.send:disabled{opacity:.55;cursor:not-allowed}
+.inw{flex:1;display:flex;align-items:center;gap:10px;direction:ltr;min-width:0}
+.pic{width:24px;height:24px;color:var(--b);flex:0 0 24px}
+input{flex:1;border:0;outline:0;background:transparent;font-size:16px;min-width:0;direction:rtl}
+input::placeholder{color:#9aa3ad}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <button class="back" onclick="history.back()">&#8592;</button>
+    <div class="tt">خدمة الزبائن</div>
+    <i id="ok" class="ok"></i>
+  </div>
+
+  <div id="chat" class="chat"></div>
+
+  <div class="bar">
+    <button id="send" class="send" disabled>يرسل</button>
+    <div class="inw">
+      <svg class="pic" viewBox="0 0 24 24"><path fill="currentColor" d="M21 19V5a2 2 0 0 0-2-2H5C3.9 3 3 3.9 3 5v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2M8.5 11A2.5 2.5 0 1 1 11 8.5A2.5 2.5 0 0 1 8.5 11m10.5 8H5l3.5-4.5l2.5 3.01L14.5 13z"/></svg>
+      <input id="msg" type="text" placeholder="الرجاء إدخال المحتوى" disabled>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import {getAuth,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import {getFirestore,doc,setDoc,getDoc,collection,addDoc,query,orderBy,onSnapshot,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyBOUqLixfphg3b8hajc4hkwV-VJmldGBVw",
+  authDomain:"randers-c640b.firebaseapp.com",
+  projectId:"randers-c640b",
+  storageBucket:"randers-c640b.firebasestorage.app",
+  messagingSenderId:"391496092929",
+  appId:"1:391496092929:web:58208b4eb3e6f9a8571f00",
+  measurementId:"G-DBDSVVF7PS"
+};
+
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const $=s=>document.querySelector(s),chat=$("#chat"),msg=$("#msg"),send=$("#send"),ok=$("#ok");
+const AUTO=`مرحبا بكم في قسم الدعم والاستفسار
+اترك رسالتك وسيتم الرد عليك قريبا!
+
+اطيب التحيات`;
+let off=()=>{};
+
+const esc=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const dot=()=>{ok.classList.add("show");setTimeout(()=>ok.classList.remove("show"),1600)};
+
+function draw(arr){
+  chat.innerHTML="";
+  arr.forEach(x=>{
+    const me=x.type==="user";
+    const d=document.createElement("div");
+    d.className="row"+(me?" me":"");
+    d.innerHTML=me
+      ? `<div class="b meb">${esc(x.text).replace(/\n/g,"<br>")}</div>`
+      : `<div class="av"><svg viewBox="0 0 24 24"><path d="M12 1a8 8 0 0 0-8 8v4a3 3 0 0 0 3 3h1v-6H6V9a6 6 0 1 1 12 0v1h-2v6h1a3 3 0 0 0 3-3V9a8 8 0 0 0-8-8m-1 19h2v2h-2z"/></svg></div><div class="b sup">${esc(x.text).replace(/\n/g,"<br>")}</div>`;
+    chat.appendChild(d);
+  });
+  chat.scrollTop=chat.scrollHeight;
+}
+
+async function boot(user){
+  const uid=user.uid,now=Date.now();
+  const tRef=doc(db,"supportThreads",uid);
+  const wRef=doc(db,"supportThreads",uid,"messages","welcome");
+  await setDoc(tRef,{
+    uid,
+    email:user.email||"",
+    name:user.displayName||"",
+    status:"open",
+    createdMs:now,
+    createdAt:serverTimestamp(),
+    lastMs:now,
+    lastAt:serverTimestamp(),
+    lastMessage:""
+  },{merge:true});
+
+  const w=await getDoc(wRef);
+  if(!w.exists()){
+    await setDoc(wRef,{
+      text:AUTO,
+      type:"support",
+      senderId:"system",
+      createdMs:Date.now(),
+      createdAt:serverTimestamp()
+    });
+    await setDoc(tRef,{
+      lastMessage:AUTO,
+      lastMs:Date.now(),
+      lastAt:serverTimestamp()
+    },{merge:true});
+  }
+
+  off();
+  off=onSnapshot(query(collection(db,"supportThreads",uid,"messages"),orderBy("createdMs","asc")),s=>{
+    const arr=[];s.forEach(d=>arr.push(d.data()));draw(arr);
+  });
+
+  msg.disabled=false;
+  send.disabled=false;
+  dot();
+}
+
+async function sendMsg(){
+  const user=auth.currentUser,text=msg.value.trim();
+  if(!user||!text)return;
+  msg.value="";
+  const now=Date.now();
+  await addDoc(collection(db,"supportThreads",user.uid,"messages"),{
+    text,
+    type:"user",
+    senderId:user.uid,
+    createdMs:now,
+    createdAt:serverTimestamp()
+  });
+  await setDoc(doc(db,"supportThreads",user.uid),{
+    uid:user.uid,
+    email:user.email||"",
+    name:user.displayName||"",
+    status:"waiting_support",
+    lastMessage:text,
+    lastMs:now,
+    lastAt:serverTimestamp()
+  },{merge:true});
+}
+
+send.onclick=sendMsg;
+msg.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}});
+
+onAuthStateChanged(auth,user=>{
+  if(user) boot(user).catch(console.error);
+  else {msg.disabled=true;send.disabled=true;}
+});
+</script>
+</body>
+</html>
