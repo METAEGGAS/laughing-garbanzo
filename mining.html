@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>مربعات متداخلة</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .scene {
+      position: relative;
+      width: 400px;
+      height: 200px;
+    }
+
+    /* ===== الطبقة الأولى ===== */
+    .layer1 .box {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background-color: #1565C0;
+      opacity: 0.85;
+      border-radius: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .layer1 .box1 {
+      animation: moveRight1 2s ease-in-out infinite alternate;
+    }
+
+    .layer1 .box2 {
+      animation: moveLeft1 2s ease-in-out infinite alternate;
+    }
+
+    /* ===== الطبقة الثانية ===== */
+    .layer2 .box {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background-color: #42A5F5;
+      opacity: 0.75;
+      border-radius: 8px;
+      top: 50%;
+      transform: translateY(-30%);
+    }
+
+    .layer2 .box1 {
+      animation: moveRight2 2s ease-in-out infinite alternate;
+    }
+
+    .layer2 .box2 {
+      animation: moveLeft2 2s ease-in-out infinite alternate;
+    }
+
+    /* ===== حركة الطبقة الأولى ===== */
+    @keyframes moveRight1 {
+      0%   { left: 20px; }
+      100% { left: 280px; }
+    }
+
+    @keyframes moveLeft1 {
+      0%   { left: 280px; }
+      100% { left: 20px; }
+    }
+
+    /* ===== حركة الطبقة الثانية ===== */
+    @keyframes moveRight2 {
+      0%   { left: 50px; }
+      100% { left: 250px; }
+    }
+
+    @keyframes moveLeft2 {
+      0%   { left: 250px; }
+      100% { left: 50px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scene">
+
+    <!-- الطبقة الأولى: أزرق غامق -->
+    <div class="layer1">
+      <div class="box box1"></div>
+      <div class="box box2"></div>
+    </div>
+
+    <!-- الطبقة الثانية: أزرق فاتح -->
+    <div class="layer2">
+      <div class="box box1"></div>
+      <div class="box box2"></div>
+    </div>
+
+  </div>
+
+</body>
+</html>
