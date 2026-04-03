@@ -3,33 +3,867 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لا يوجد عروض</title>
+  <title>أرباح الإشارات اليومية</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root{
+      --gold1:#fff3a0;
+      --gold2:#ffd75c;
+      --gold3:#ffb300;
+      --gold4:#b96e00;
+
+      --blue1:#0b4dff;
+      --blue2:#092fa9;
+      --blue3:#08196e;
+
+      --brown1:#d88a0a;
+      --brown2:#8f4b00;
+      --brown3:#5b2c00;
+
+      --purple1:#a80bff;
+      --purple2:#6110d8;
+      --purple3:#3a0085;
+
+      --white:#fff;
+      --soft:#f8f6ff;
+      --shadow: 0 14px 24px rgba(0,0,0,.35);
+      --stroke:
+        -1px -1px 0 rgba(47,24,0,.95),
+         1px -1px 0 rgba(47,24,0,.95),
+        -1px  1px 0 rgba(47,24,0,.95),
+         1px  1px 0 rgba(47,24,0,.95),
+         0 5px 10px rgba(0,0,0,.40);
     }
 
-    body {
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #ffffff;
-      font-family: Arial, sans-serif;
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
     }
 
-    .message {
-      font-size: 32px;
-      font-weight: bold;
-      color: #f3f3f3; /* أبيض باهت */
-      text-align: center;
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 50% 10%, #2e6dff 0%, rgba(46,109,255,.35) 18%, transparent 40%),
+        linear-gradient(180deg,#09155f 0%, #0d2aaf 32%, #132ca2 55%, #1a1580 78%, #120d54 100%);
+      font-family:"Cairo", sans-serif;
+      padding:20px;
+    }
+
+    .poster{
+      position:relative;
+      width:min(96vw, 860px);
+      aspect-ratio:852/853;
+      overflow:hidden;
+      border-radius:8px;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(81,195,255,.35), transparent 23%),
+        radial-gradient(circle at 50% 68%, rgba(126,73,255,.22), transparent 34%),
+        linear-gradient(180deg,#0a1d8d 0%, #0d36c7 26%, #1230ad 48%, #20228d 70%, #140f56 100%);
+      box-shadow:0 25px 60px rgba(0,0,0,.45);
+      isolation:isolate;
+    }
+
+    /* Grid overlay */
+    .poster::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 100% 108px, 100px 100%;
+      opacity:.28;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    /* World map glow fake */
+    .poster::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:120px;
+      width:440px;
+      height:210px;
+      transform:translateX(-50%);
+      background:
+        radial-gradient(circle at 20% 50%, rgba(111,224,255,.20) 0 18%, transparent 19%),
+        radial-gradient(circle at 33% 42%, rgba(111,224,255,.16) 0 16%, transparent 17%),
+        radial-gradient(circle at 52% 45%, rgba(111,224,255,.18) 0 17%, transparent 18%),
+        radial-gradient(circle at 70% 49%, rgba(111,224,255,.18) 0 16%, transparent 17%),
+        radial-gradient(circle at 82% 58%, rgba(111,224,255,.17) 0 12%, transparent 13%);
+      filter: blur(8px);
+      opacity:.75;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    /* Candles */
+    .candles{
+      position:absolute;
+      top:8px;
+      left:0;
+      right:0;
+      height:105px;
+      z-index:1;
+      pointer-events:none;
+    }
+    .candle{
+      position:absolute;
+      bottom:8px;
+      width:12px;
+      border-radius:2px;
+      box-shadow:0 0 12px rgba(255,255,255,.18);
+    }
+    .candle::before,
+    .candle::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      width:2px;
+      background:rgba(255,180,120,.9);
+    }
+    .candle::before{
+      bottom:100%;
+      height:18px;
+    }
+    .candle::after{
+      top:100%;
+      height:18px;
+    }
+    .candle.green{ background:linear-gradient(180deg,#86fff1,#2fc6b9); }
+    .candle.red{ background:linear-gradient(180deg,#ff9c79,#f24949); }
+    .candle.orange{ background:linear-gradient(180deg,#ffd28c,#ff9132); }
+    .candle.blue{ background:linear-gradient(180deg,#8cd6ff,#4a8cff); }
+
+    .line-dots{
+      position:absolute;
+      top:32px;
+      left:0;
+      right:0;
+      height:2px;
+      border-top:2px dashed rgba(255,255,255,.35);
+      z-index:1;
+      opacity:.65;
+    }
+
+    /* Title */
+    .title{
+      position:absolute;
+      top:20px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:3;
+      font-size:58px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:.2px;
+      color:transparent;
+      background:linear-gradient(180deg,#fff5af 0%, #ffd95c 35%, #ffba1d 75%, #c97800 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      text-shadow: var(--stroke);
+      white-space:nowrap;
+    }
+
+    /* Up arrows on right */
+    .arrows{
+      position:absolute;
+      top:116px;
+      right:18px;
+      width:124px;
+      height:150px;
+      z-index:2;
+      pointer-events:none;
+    }
+    .arrow{
+      position:absolute;
+      right:0;
+      height:6px;
+      border-radius:20px;
+      background:linear-gradient(90deg,#ffcc2f,#ffe686);
+      box-shadow:0 0 18px rgba(255,203,45,.7);
+      transform-origin:right center;
+    }
+    .arrow::after{
+      content:"";
+      position:absolute;
+      right:-2px;
+      top:50%;
+      transform:translateY(-50%);
+      border-left:18px solid #ffd53b;
+      border-top:12px solid transparent;
+      border-bottom:12px solid transparent;
+      filter:drop-shadow(0 0 6px rgba(255,210,50,.55));
+    }
+    .arrow.a1{ width:90px; top:20px; transform:rotate(-38deg); }
+    .arrow.a2{ width:82px; top:76px; transform:rotate(-25deg); }
+
+    /* Shared plan card */
+    .plan{
+      position:absolute;
+      width:358px;
+      height:412px;
+      top:100px;
+      padding:106px 26px 60px;
+      color:#fff;
+      clip-path:polygon(4% 0, 96% 0, 100% 6%, 100% 84%, 58% 100%, 50% 97%, 42% 100%, 0 84%, 0 6%);
+      border:3px solid rgba(255,241,181,.75);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.12),
+        inset 0 25px 35px rgba(255,255,255,.06),
+        0 14px 24px rgba(0,0,0,.42),
+        0 0 18px rgba(56,130,255,.32);
+      z-index:4;
+    }
+
+    .plan::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      clip-path:inherit;
+      box-shadow: inset 0 -30px 40px rgba(0,0,0,.30);
+      z-index:-1;
+    }
+
+    .plan.left{
+      left:44px;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(255,255,255,.14), transparent 30%),
+        linear-gradient(180deg,#134cff 0%, #0d2fb4 40%, #0b238f 72%, #091f7f 100%);
+    }
+
+    .plan.right{
+      right:46px;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(255,244,188,.18), transparent 28%),
+        linear-gradient(180deg,#cb7d00 0%, #8b4a00 42%, #713500 72%, #5b2a00 100%);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,234,172,.20),
+        inset 0 25px 35px rgba(255,255,255,.08),
+        0 14px 24px rgba(0,0,0,.42),
+        0 0 18px rgba(255,190,70,.28);
+    }
+
+    .plan-top{
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:86px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      border-bottom:2px solid rgba(255,239,190,.55);
+      box-shadow: inset 0 -10px 18px rgba(0,0,0,.18);
+    }
+
+    .left .plan-top{
+      background:
+        linear-gradient(180deg,#3874ff 0%, #1148dc 55%, #0a30aa 100%);
+    }
+
+    .right .plan-top{
+      background:
+        linear-gradient(180deg,#ffc218 0%, #cc7b00 55%, #995600 100%);
+    }
+
+    .plan-top::after{
+      content:"";
+      position:absolute;
+      bottom:-18px;
+      left:50%;
+      transform:translateX(-50%);
+      width:70%;
+      height:24px;
+      background:inherit;
+      clip-path:polygon(0 0,100% 0,93% 50%,50% 100%,7% 50%);
+      border-bottom:2px solid rgba(255,239,190,.35);
+      filter:brightness(.9);
+    }
+
+    .deposit{
+      font-size:26px;
+      font-weight:800;
+      color:#fff0ab;
+      text-shadow:0 2px 6px rgba(0,0,0,.45);
+    }
+
+    .price{
+      font-size:64px;
+      line-height:1;
+      font-weight:900;
+      color:transparent;
+      background:linear-gradient(180deg,#fffce0 0%, #ffe67a 35%, #ffca31 75%, #d58400 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      text-shadow:
+        -1px -1px 0 rgba(89,45,0,.9),
+         1px -1px 0 rgba(89,45,0,.9),
+        -1px  1px 0 rgba(89,45,0,.9),
+         1px  1px 0 rgba(89,45,0,.9),
+         0 6px 10px rgba(0,0,0,.34);
+    }
+
+    .bullets{
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:28px;
+      font-size:23px;
+      font-weight:700;
+      line-height:1.55;
+      text-shadow:0 2px 5px rgba(0,0,0,.38);
+    }
+
+    .bullets li{
+      position:relative;
+      padding-right:24px;
+    }
+
+    .bullets li::before{
+      content:"";
+      position:absolute;
+      right:0;
+      top:.6em;
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 0 10px rgba(255,255,255,.6);
+    }
+
+    .hl{
+      color:#ffd447;
+      font-weight:900;
+    }
+
+    .small-gap{
+      display:block;
+      margin-top:4px;
+    }
+
+    /* Ribbon */
+    .ribbon-wrap{
+      position:absolute;
+      left:46px;
+      right:46px;
+      top:525px;
+      height:124px;
+      z-index:4;
+    }
+
+    .ribbon{
+      position:absolute;
+      inset:0 48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:18px 24px;
+      color:#fff;
+      font-size:20px;
+      line-height:1.8;
+      font-weight:700;
+      background:
+        linear-gradient(180deg,#b53eff 0%, #6d21e6 45%, #4a0faa 100%);
+      border:3px solid rgba(255,148,255,.38);
+      box-shadow:
+        inset 0 10px 22px rgba(255,255,255,.12),
+        inset 0 -14px 20px rgba(0,0,0,.22),
+        0 10px 20px rgba(0,0,0,.35);
+    }
+
+    .ribbon::before,
+    .ribbon::after{
+      content:"";
+      position:absolute;
+      top:18px;
+      bottom:18px;
+      width:56px;
+      background:linear-gradient(180deg,#cb36ff 0%, #7f16ef 55%, #45008d 100%);
+      z-index:-1;
+      box-shadow:0 10px 18px rgba(0,0,0,.28);
+    }
+    .ribbon::before{
+      left:-40px;
+      clip-path:polygon(100% 0, 20% 10%, 0 50%, 20% 90%, 100% 100%, 82% 50%);
+    }
+    .ribbon::after{
+      right:-40px;
+      clip-path:polygon(0 0, 80% 10%, 100% 50%, 80% 90%, 0 100%, 18% 50%);
+    }
+
+    /* middle note */
+    .mid-note{
+      position:absolute;
+      left:110px;
+      right:110px;
+      top:670px;
+      text-align:center;
+      color:#fff;
+      font-size:24px;
+      font-weight:700;
+      line-height:1.8;
+      text-shadow:0 3px 8px rgba(0,0,0,.42);
+      z-index:3;
+    }
+
+    /* Fee box */
+    .fee-box{
+      position:absolute;
+      left:175px;
+      right:175px;
+      bottom:46px;
+      min-height:160px;
+      padding:22px 30px;
+      text-align:center;
+      z-index:4;
+      background:
+        linear-gradient(180deg,#ffe997 0%, #f8d76b 48%, #e4b949 100%);
+      border:2px solid rgba(170,100,10,.35);
+      box-shadow:
+        inset 0 10px 18px rgba(255,255,255,.28),
+        inset 0 -10px 18px rgba(150,80,0,.14),
+        0 8px 18px rgba(0,0,0,.25);
+      color:#3d2200;
+      font-size:22px;
+      font-weight:700;
+      line-height:1.85;
+    }
+
+    .fee-box .imp{
+      color:#9c2b00;
+      font-weight:900;
+    }
+
+    /* left money pile */
+    .money-left{
+      position:absolute;
+      left:-6px;
+      bottom:-8px;
+      width:250px;
+      height:205px;
+      z-index:5;
+      pointer-events:none;
+    }
+
+    .coin{
+      position:absolute;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 32% 28%, #fff8bf 0 10%, #ffd963 20%, #f0ae19 58%, #bb6d00 100%);
+      box-shadow:
+        inset 0 4px 8px rgba(255,255,255,.35),
+        inset 0 -5px 8px rgba(110,55,0,.30),
+        0 6px 12px rgba(0,0,0,.25);
+      border:2px solid rgba(255,224,127,.55);
+    }
+    .coin::after{
+      content:"";
+      position:absolute;
+      inset:18%;
+      border-radius:50%;
+      border:2px solid rgba(214,136,0,.55);
+    }
+
+    .bill{
+      position:absolute;
+      width:92px;
+      height:52px;
+      border-radius:4px;
+      background:
+        linear-gradient(180deg,#f6f4cc 0%, #d6d59a 20%, #aed18a 55%, #7aaf60 100%);
+      border:2px solid rgba(60,100,40,.45);
+      box-shadow:0 10px 14px rgba(0,0,0,.25);
+    }
+    .bill::before{
+      content:"$";
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:rgba(50,100,45,.8);
+      font-size:26px;
+      font-weight:900;
+    }
+
+    .money-left .base{
+      position:absolute;
+      left:8px;
+      bottom:0;
+      width:185px;
+      height:84px;
+      border-radius:50% 50% 30% 40%;
+      background:rgba(12,9,44,.32);
+      filter:blur(8px);
+    }
+
+    .stack{
+      position:absolute;
+      bottom:20px;
+      left:20px;
+      width:76px;
+      height:120px;
+    }
+    .stack .coin{
+      width:74px;
+      height:16px;
+      left:0;
+    }
+
+    .money-left .c1{ width:96px;height:96px; left:0; bottom:16px; }
+    .money-left .c2{ width:70px;height:70px; left:68px; bottom:8px; }
+    .money-left .c3{ width:54px;height:54px; left:126px; bottom:6px; }
+    .money-left .c4{ width:46px;height:46px; left:155px; bottom:34px; }
+    .money-left .c5{ width:40px;height:40px; left:180px; bottom:2px; }
+
+    .money-left .big-dollar{
+      position:absolute;
+      width:110px;
+      height:110px;
+      left:12px;
+      bottom:24px;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 34% 26%, #fff7b8 0 10%, #ffd348 26%, #efaa16 62%, #b96a00 100%);
+      box-shadow:
+        inset 0 6px 12px rgba(255,255,255,.35),
+        inset 0 -6px 10px rgba(90,50,0,.3),
+        0 12px 18px rgba(0,0,0,.28);
+      border:3px solid rgba(255,220,114,.6);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#df8d00;
+      font-size:56px;
+      font-weight:900;
+    }
+
+    .money-left .bill.b1{ left:6px; bottom:72px; transform:rotate(-12deg); }
+    .money-left .bill.b2{ left:68px; bottom:72px; transform:rotate(8deg); }
+    .money-left .bill.b3{ left:114px; bottom:64px; transform:rotate(22deg); }
+
+    /* right chest */
+    .chest-right{
+      position:absolute;
+      right:-4px;
+      bottom:-4px;
+      width:255px;
+      height:208px;
+      z-index:5;
+      pointer-events:none;
+    }
+
+    .chest-right .shadow{
+      position:absolute;
+      right:10px;
+      bottom:4px;
+      width:180px;
+      height:70px;
+      background:rgba(0,0,0,.28);
+      filter:blur(10px);
+      border-radius:50%;
+    }
+
+    .chest{
+      position:absolute;
+      right:20px;
+      bottom:18px;
+      width:148px;
+      height:104px;
+      transform:skewX(-8deg);
+      background:
+        linear-gradient(145deg,#fff3ad 0%, #ffc92d 22%, #df9400 58%, #8d4700 100%);
+      border-radius:10px;
+      box-shadow:
+        inset 0 10px 18px rgba(255,255,255,.25),
+        inset 0 -10px 18px rgba(80,40,0,.2),
+        0 14px 22px rgba(0,0,0,.32);
+      border:2px solid rgba(255,221,120,.45);
+    }
+
+    .chest::before{
+      content:"";
+      position:absolute;
+      right:4px;
+      top:-36px;
+      width:144px;
+      height:52px;
+      background:
+        linear-gradient(145deg,#fff1a0 0%, #ffc62d 26%, #d88400 70%, #8d4700 100%);
+      border-radius:14px 14px 8px 8px;
+      transform:rotate(-8deg);
+      box-shadow:
+        inset 0 8px 14px rgba(255,255,255,.24),
+        0 12px 16px rgba(0,0,0,.28);
+      border:2px solid rgba(255,221,120,.45);
+    }
+
+    .chest-right .coin{
+      width:42px;
+      height:42px;
+    }
+    .chest-right .coin.r1{ right:138px; bottom:18px; }
+    .chest-right .coin.r2{ right:108px; bottom:8px; width:34px;height:34px; }
+    .chest-right .coin.r3{ right:78px; bottom:20px; width:52px;height:52px; }
+    .chest-right .coin.r4{ right:26px; bottom:42px; width:36px;height:36px; }
+    .chest-right .coin.r5{ right:146px; bottom:92px; width:46px;height:46px; }
+    .chest-right .coin.r6{ right:174px; bottom:108px; width:34px;height:34px; }
+
+    .chest-right .bill.rb1{ right:132px; bottom:108px; transform:rotate(-20deg); }
+    .chest-right .bill.rb2{ right:72px; bottom:96px; transform:rotate(10deg); width:76px; height:44px; }
+    .chest-right .bill.rb3{ right:18px; bottom:94px; transform:rotate(30deg); width:68px; height:40px; }
+
+    .coin-stack-right{
+      position:absolute;
+      right:176px;
+      bottom:52px;
+      width:54px;
+      height:82px;
+    }
+    .coin-stack-right .coin{
+      width:52px;
+      height:12px;
+      right:0;
+      border-radius:50%;
+    }
+
+    /* sparkles */
+    .sparkle{
+      position:absolute;
+      width:16px;
+      height:16px;
+      z-index:2;
+      pointer-events:none;
+    }
+    .sparkle::before,
+    .sparkle::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      background:linear-gradient(180deg,#fff7bf,#ffd13c);
+      border-radius:30px;
+      box-shadow:0 0 12px rgba(255,215,80,.65);
+    }
+    .sparkle::before{ width:2px; height:16px; }
+    .sparkle::after{ width:16px; height:2px; }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .title{ font-size:6.5vw; top:2.2vw; }
+      .plan{
+        width:42%;
+        height:48%;
+        top:11.8%;
+        padding:12% 3% 8%;
+      }
+      .plan.left{ left:5%; }
+      .plan.right{ right:5%; }
+      .plan-top{ height:22%; }
+      .deposit{ font-size:2.2vw; }
+      .price{ font-size:6vw; }
+      .bullets{ font-size:2.5vw; gap:2.5vw; }
+      .ribbon-wrap{ top:61.5%; height:14.6%; left:5%; right:5%; }
+      .ribbon{ font-size:2.25vw; }
+      .mid-note{
+        top:78.4%;
+        left:10%;
+        right:10%;
+        font-size:2.75vw;
+      }
+      .fee-box{
+        left:20%;
+        right:20%;
+        bottom:5.2%;
+        min-height:18%;
+        font-size:2.45vw;
+        padding:2.2vw 3vw;
+      }
+      .money-left{ width:29%; height:24%; }
+      .chest-right{ width:30%; height:24%; }
+    }
+
+    @media (max-width: 640px){
+      body{ padding:8px; }
+      .title{ font-size:6.2vw; }
+      .price{ font-size:5.8vw; }
+      .deposit{ font-size:2.4vw; }
+      .bullets{ font-size:2.45vw; }
+      .ribbon{ font-size:2.1vw; line-height:1.7; }
+      .mid-note{ font-size:2.55vw; }
+      .fee-box{ font-size:2.3vw; }
     }
   </style>
 </head>
 <body>
-  <div class="message">لا يوجد أي عروض ترويجية بعد!</div>
+
+  <div class="poster">
+
+    <div class="line-dots"></div>
+
+    <div class="candles">
+      <span class="candle red"    style="left:8px;height:54px;"></span>
+      <span class="candle orange" style="left:30px;height:34px;"></span>
+      <span class="candle blue"   style="left:58px;height:46px;"></span>
+      <span class="candle green"  style="left:90px;height:78px;"></span>
+      <span class="candle red"    style="left:118px;height:64px;"></span>
+      <span class="candle orange" style="left:148px;height:38px;"></span>
+      <span class="candle blue"   style="left:178px;height:70px;"></span>
+      <span class="candle green"  style="left:210px;height:86px;"></span>
+      <span class="candle orange" style="left:252px;height:50px;"></span>
+      <span class="candle red"    style="left:286px;height:60px;"></span>
+      <span class="candle blue"   style="left:322px;height:94px;"></span>
+      <span class="candle green"  style="left:740px;height:98px;"></span>
+      <span class="candle blue"   style="left:760px;height:72px;"></span>
+      <span class="candle red"    style="left:784px;height:88px;"></span>
+      <span class="candle orange" style="left:814px;height:42px;"></span>
+    </div>
+
+    <div class="title">أرباح الإشارات اليومية</div>
+
+    <div class="arrows">
+      <span class="arrow a1"></span>
+      <span class="arrow a2"></span>
+    </div>
+
+    <section class="plan left">
+      <div class="plan-top">
+        <span class="price">$500</span>
+        <span class="deposit">إيداع</span>
+      </div>
+
+      <ul class="bullets">
+        <li>
+          الحصول على <span class="hl">3</span> إشارات تداول
+          <span class="small-gap">يومياً</span>
+        </li>
+        <li>
+          العائد اليومي حوالي <span class="hl">%5</span>
+        </li>
+        <li>
+          مدة مضاعفة رأس المال حوالي
+          <span class="small-gap"><span class="hl">16</span> يوماً</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="plan right">
+      <div class="plan-top">
+        <span class="price">$1000</span>
+        <span class="deposit">إيداع</span>
+      </div>
+
+      <ul class="bullets">
+        <li>
+          الحصول على <span class="hl">4</span> إشارات تداول
+          <span class="small-gap">يومياً</span>
+        </li>
+        <li>
+          العائد اليومي حوالي <span class="hl">%8</span>
+        </li>
+        <li>
+          مدة مضاعفة رأس المال <span class="hl">10</span> أيام
+        </li>
+      </ul>
+    </section>
+
+    <div class="ribbon-wrap">
+      <div class="ribbon">
+        لا يمكن سحب رأس المال قبل تحقيق مضاعفته، وبعد مضاعفة الأرباح يمكن فتح
+        سحب رأس المال، وفي حال فك رأس المال مسبقاً، يتطلب دفع رسوم بنسبة %25.
+      </div>
+    </div>
+
+    <div class="mid-note">
+      يمكن سحب الأرباح اليومية وأرباح الدعوات في أي وقت،<br>
+      والحد الأدنى للسحب هو 10 دولارات أمريكية.
+    </div>
+
+    <div class="fee-box">
+      رسوم السحب: من <span class="imp">10</span> إلى <span class="imp">99</span> دولاراً أمريكياً،<br>
+      رسم ثابت <span class="imp">5</span> دولارات لكل سحب؛ للمبالغ التي تزيد عن
+      <span class="imp">100</span> دولار أمريكي، يتم خصم <span class="imp">%5</span> رسوم لكل سحب.
+    </div>
+
+    <!-- Left decorative money -->
+    <div class="money-left">
+      <div class="base"></div>
+      <div class="bill b1"></div>
+      <div class="bill b2"></div>
+      <div class="bill b3"></div>
+
+      <div class="stack">
+        <span class="coin" style="bottom:0;"></span>
+        <span class="coin" style="bottom:10px;"></span>
+        <span class="coin" style="bottom:20px;"></span>
+        <span class="coin" style="bottom:30px;"></span>
+        <span class="coin" style="bottom:40px;"></span>
+        <span class="coin" style="bottom:50px;"></span>
+        <span class="coin" style="bottom:60px;"></span>
+        <span class="coin" style="bottom:70px;"></span>
+        <span class="coin" style="bottom:80px;"></span>
+      </div>
+
+      <div class="big-dollar">$</div>
+
+      <span class="coin c1"></span>
+      <span class="coin c2"></span>
+      <span class="coin c3"></span>
+      <span class="coin c4"></span>
+      <span class="coin c5"></span>
+    </div>
+
+    <!-- Right decorative chest -->
+    <div class="chest-right">
+      <div class="shadow"></div>
+
+      <div class="coin-stack-right">
+        <span class="coin" style="bottom:0;"></span>
+        <span class="coin" style="bottom:10px;"></span>
+        <span class="coin" style="bottom:20px;"></span>
+        <span class="coin" style="bottom:30px;"></span>
+        <span class="coin" style="bottom:40px;"></span>
+        <span class="coin" style="bottom:50px;"></span>
+      </div>
+
+      <div class="bill rb1"></div>
+      <div class="bill rb2"></div>
+      <div class="bill rb3"></div>
+
+      <div class="chest"></div>
+
+      <span class="coin r1"></span>
+      <span class="coin r2"></span>
+      <span class="coin r3"></span>
+      <span class="coin r4"></span>
+      <span class="coin r5"></span>
+      <span class="coin r6"></span>
+    </div>
+
+    <!-- Sparkles -->
+    <span class="sparkle" style="left:66px; top:620px;"></span>
+    <span class="sparkle" style="left:352px; top:624px;"></span>
+    <span class="sparkle" style="right:44px; top:620px;"></span>
+    <span class="sparkle" style="left:120px; bottom:112px;"></span>
+    <span class="sparkle" style="right:156px; bottom:174px;"></span>
+    <span class="sparkle" style="right:44px; bottom:92px;"></span>
+
+  </div>
+
 </body>
 </html>
