@@ -8,7 +8,7 @@ import time
 
 # اتصال Firebase
 cred = credentials.Certificate(
-    "hhhxh-5ebe4-firebase-adminsdk-fbsvc-f3ecdb67a0.json"
+    "hhhxh-5ebe4-firebase-adminsdk-fbsvc-45402e4ef4.json"
 )
 
 firebase_admin.initialize_app(cred)
